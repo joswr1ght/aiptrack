@@ -274,12 +274,11 @@ Values that are reused within the database are defined using lookup tables or EN
 
    - Multiple performance metrics can be recorded in a single session
 
-### Missing Tables/Relationships:
+### Tables and Relationships
 
-7. **User Roles & Permissions**: How are gym-coach relationships stored?
-8. **Audit Trail**: Do you need to track who created/modified records?
-9. **Notifications**: How are notification preferences and delivery tracked?
-10. **File Management**: How are uploaded images/videos managed in the database?
+- Audit Trail: Track who created/modified records
+- Notifications: Notifications are sent by email based on preferences associated with the user
+- File Management: Uploaded images are stored in a local filesystem or S3-compatible storage, with URLs stored in the database
 
 
 ## Data Model

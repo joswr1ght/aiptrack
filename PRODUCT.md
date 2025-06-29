@@ -262,6 +262,28 @@ Values that are reused within the database are defined using lookup tables or EN
 - A user can have multiple roles (e.g., both athlete and coach)
 - Federated authentication is supported through external_id field
 
+### Data Constraints
+
+   - Email addresses must be valid; no requirement for uniqueness
+   - Coaches can only manage athletes within their associated gyms
+   - Within a gym, any coach can manage any athlete to add performance data and observe their progress
+   - Administrators must approve a coach and gym assignment before they can manage athletes (maybe this is an is_approved boolean field in the User-Gym relationship table?)
+   - If coach or gym is archived, athlete data remains in the system
+
+### Performance Data
+
+   - Multiple performance metrics can be recorded in a single session
+
+### Missing Tables/Relationships:
+
+7. **User Roles & Permissions**: How are gym-coach relationships stored?
+8. **Audit Trail**: Do you need to track who created/modified records?
+9. **Notifications**: How are notification preferences and delivery tracked?
+10. **File Management**: How are uploaded images/videos managed in the database?
+
+
+## Data Model
+
 ### Users Data
 
 + id: UUID

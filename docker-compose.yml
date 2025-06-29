@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  database:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    container_name: aiptrack-database
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-aiptrack}
+      MYSQL_USER: ${DB_USER:-aiptrack_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-aiptrack_pass}
+    volumes:
+      - db_data:/var/lib/mysql
+      - mysql_logs:/var/log/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - aiptrack-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aiptrack-backend
+    restart: unless-stopped
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-development}
+      DATABASE_URL: mysql://${DB_USER:-aiptrack_user}:${DB_PASSWORD:-aiptrack_pass}@database:3306/${DB_NAME:-aiptrack}
+      DATABASE_TEST_URL: mysql://${DB_USER:-aiptrack_user}:${DB_PASSWORD:-aiptrack_pass}@database:3306/${DB_NAME:-aiptrack}_test
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-your-secret-key-change-in-production}
+      JWT_ACCESS_TOKEN_EXPIRES: ${JWT_ACCESS_TOKEN_EXPIRES:-36000}
+      SECRET_KEY: ${SECRET_KEY:-your-flask-secret-key-change-in-production}
+      UPLOAD_FOLDER: /app/uploads
+      MAX_CONTENT_LENGTH: 16777216
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - uploads_data:/app/uploads
+      - ./backend:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - aiptrack-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aiptrack-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - aiptrack-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  db_data:
+    driver: local
+  mysql_logs:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  aiptrack-network:
+    driver: bridge
+

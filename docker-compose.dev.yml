@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  database:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    ports:
+      - "3307:3306"  # Different port for dev to avoid conflicts
+    environment:
+      MYSQL_ROOT_PASSWORD: devpassword
+      MYSQL_DATABASE: aiptrack_dev
+      MYSQL_USER: dev_user
+      MYSQL_PASSWORD: dev_pass
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend:/app
+      - uploads_data:/app/uploads
+    ports:
+      - "3001:3000"  # Map to different external port for dev
+    environment:
+      FLASK_ENV: development
+      FLASK_DEBUG: 1
+      DATABASE_URL: mysql://dev_user:dev_pass@database:3306/aiptrack_dev
+    command: ["flask", "run", "--host=0.0.0.0", "--port=3000", "--debug"]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3002:3000"  # Map to different external port for dev
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+      - CHOKIDAR_USEPOLLING=true
+    command: ["npm", "start"]

@@ -1,0 +1,771 @@
+openapi: 3.0.3
+info:
+  title: AIP Track API
+  description: All In Performance Athlete Tracking API for managing athletes, coaches, exercises, and performance metrics
+  version: 1.0.0
+  contact:
+    name: AIP Track Development Team
+    email: dev@aiptrack.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001/api
+    description: Development server
+  - url: https://api.aiptrack.com/api
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Missing credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid input or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Get information about the currently authenticated user
+      responses:
+        '200':
+          description: User information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh token
+      description: Refresh the JWT access token
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '401':
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: User logout
+      description: Logout the current user
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successfully logged out
+
+  /athletes:
+    get:
+      tags:
+        - Athletes
+      summary: List athletes
+      description: Get a paginated list of athletes
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - name: gym_id
+          in: query
+          description: Filter by gym ID
+          schema:
+            type: string
+        - name: coach_id
+          in: query
+          description: Filter by coach ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Athletes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAthletes'
+
+    post:
+      tags:
+        - Athletes
+      summary: Create athlete
+      description: Create a new athlete profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAthleteRequest'
+      responses:
+        '201':
+          description: Athlete created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /athletes/{id}:
+    get:
+      tags:
+        - Athletes
+      summary: Get athlete
+      description: Get a specific athlete by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Athlete retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Athlete not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Athletes
+      summary: Update athlete
+      description: Update an athlete's profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAthleteRequest'
+      responses:
+        '200':
+          description: Athlete updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /exercises:
+    get:
+      tags:
+        - Exercises
+      summary: List exercises
+      description: Get a paginated list of exercises
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PerPageParam'
+        - name: category
+          in: query
+          description: Filter by exercise category
+          schema:
+            type: string
+            enum: [system, custom]
+        - name: search
+          in: query
+          description: Search exercises by name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Exercises retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExercises'
+
+    post:
+      tags:
+        - Exercises
+      summary: Create exercise
+      description: Create a new custom exercise
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExerciseRequest'
+      responses:
+        '201':
+          description: Exercise created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+
+  /exercises/{id}:
+    get:
+      tags:
+        - Exercises
+      summary: Get exercise
+      description: Get a specific exercise by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Exercise retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+
+  /metrics:
+    post:
+      tags:
+        - Metrics
+      summary: Record performance metric
+      description: Record a new performance metric for an athlete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMetricRequest'
+      responses:
+        '201':
+          description: Metric recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceMetric'
+
+  /metrics/athlete/{athlete_id}:
+    get:
+      tags:
+        - Metrics
+      summary: Get athlete metrics
+      description: Get performance metrics for a specific athlete
+      parameters:
+        - name: athlete_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: exercise_id
+          in: query
+          description: Filter by exercise ID
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: Start date for metrics (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: End date for metrics (ISO 8601)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PerformanceMetric'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check API health status
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  database:
+                    type: string
+                    example: connected
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    PerPageParam:
+      name: per_page
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: athlete@example.com
+        password:
+          type: string
+          format: password
+          example: password123
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - first_name
+        - last_name
+      properties:
+        email:
+          type: string
+          format: email
+          example: athlete@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: password123
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        is_athlete:
+          type: boolean
+          default: true
+        is_coach:
+          type: boolean
+          default: false
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          example: athlete@example.com
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        nick_name:
+          type: string
+          example: Johnny
+        date_of_birth:
+          type: string
+          format: date
+          example: "1995-06-15"
+        sex:
+          type: string
+          enum: [M, F, Other]
+          example: M
+        height:
+          type: number
+          format: float
+          description: Height in meters
+          example: 1.82
+        weight:
+          type: number
+          format: float
+          description: Weight in kilograms
+          example: 75.5
+        profile_image_url:
+          type: string
+          format: uri
+          example: https://example.com/images/profile.jpg
+        last_tested:
+          type: string
+          format: date
+          example: "2023-12-01"
+        is_athlete:
+          type: boolean
+          example: true
+        is_coach:
+          type: boolean
+          example: false
+        is_admin:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2023-12-01T14:22:00Z"
+
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 550e8400-e29b-41d4-a716-446655440001
+        name:
+          type: string
+          example: Squat
+        category:
+          type: string
+          enum: [system, custom]
+          example: system
+        instructions:
+          type: string
+          example: Stand with feet shoulder-width apart, lower body by bending knees and hips.
+        creator_id:
+          type: string
+          format: uuid
+          nullable: true
+        creator_name:
+          type: string
+          nullable: true
+        is_enabled:
+          type: boolean
+          example: true
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PerformanceMetric:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        athlete_id:
+          type: string
+          format: uuid
+        exercise_id:
+          type: string
+          format: uuid
+        coach_id:
+          type: string
+          format: uuid
+        gym_id:
+          type: string
+          format: uuid
+        exercise_metric_id:
+          type: string
+          format: uuid
+        value:
+          type: number
+          format: float
+          description: Metric value in SI units
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateAthleteRequest:
+      type: object
+      required:
+        - email
+        - first_name
+        - last_name
+      properties:
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        nick_name:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        sex:
+          type: string
+          enum: [M, F, Other]
+        height:
+          type: number
+          format: float
+        weight:
+          type: number
+          format: float
+
+    UpdateAthleteRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        nick_name:
+          type: string
+        date_of_birth:
+          type: string
+          format: date
+        sex:
+          type: string
+          enum: [M, F, Other]
+        height:
+          type: number
+          format: float
+        weight:
+          type: number
+          format: float
+
+    CreateExerciseRequest:
+      type: object
+      required:
+        - name
+        - category
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [custom]
+        instructions:
+          type: string
+        image_url:
+          type: string
+          format: uri
+
+    CreateMetricRequest:
+      type: object
+      required:
+        - athlete_id
+        - exercise_id
+        - exercise_metric_id
+        - value
+        - date
+      properties:
+        athlete_id:
+          type: string
+          format: uuid
+        exercise_id:
+          type: string
+          format: uuid
+        exercise_metric_id:
+          type: string
+          format: uuid
+        value:
+          type: number
+          format: float
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+
+    PaginatedAthletes:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    PaginatedExercises:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Exercise'
+        pagination:
+          $ref: '#/components/schemas/PaginationInfo'
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+        pages:
+          type: integer
+          example: 5
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Validation failed
+        details:
+          type: object
+          example: {}
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Athletes
+    description: Athlete management operations
+  - name: Coaches
+    description: Coach management operations
+  - name: Exercises
+    description: Exercise definition and management
+  - name: Metrics
+    description: Performance metrics tracking
+  - name: Cohorts
+    description: Athlete cohort management
+  - name: Gyms
+    description: Gym management operations
+  - name: Health
+    description: API health and monitoring

@@ -1,4 +1,5 @@
 from flask import Blueprint
+from sqlalchemy import text
 from app import db
 
 health_bp = Blueprint('health', __name__)
@@ -8,7 +9,7 @@ def health_check():
     """Health check endpoint"""
     try:
         # Test database connection
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
 
         return {
             'status': 'healthy',

@@ -18,11 +18,11 @@ fi
 
 # Stop any existing containers
 echo "🔄 Stopping existing containers..."
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml down
+docker compose -f docker-compose.yml -f docker-compose.dev.yml down
 
 # Build and start development environment
 echo "🚀 Building and starting development services..."
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 
 echo "✅ Development environment started!"
 echo "📱 Frontend: http://localhost:3002"

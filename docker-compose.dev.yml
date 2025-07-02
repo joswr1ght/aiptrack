@@ -25,7 +25,7 @@ services:
     environment:
       FLASK_ENV: development
       FLASK_DEBUG: 1
-      DATABASE_URL: mysql://dev_user:dev_pass@database:3306/aiptrack_dev
+      DATABASE_URL: mysql+pymysql://dev_user:dev_pass@database:3306/aiptrack_dev
     command: ["flask", "run", "--host=0.0.0.0", "--port=3000", "--debug"]
 
   frontend:

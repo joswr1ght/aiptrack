@@ -18,13 +18,13 @@ class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql://dev_user:dev_pass@localhost:3307/aiptrack_dev'
+        'mysql+pymysql://dev_user:dev_pass@localhost:3307/aiptrack_dev'
 
 class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql://aiptrack_user:aiptrack_pass@database:3306/aiptrack'
+        'mysql+pymysql://aiptrack_user:aiptrack_pass@database:3306/aiptrack'
 
 class TestingConfig(Config):
     """Testing configuration"""

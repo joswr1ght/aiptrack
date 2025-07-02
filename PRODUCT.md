@@ -1,6 +1,6 @@
 # Product Definition
 
-All In Performance (AIP) Athlete Tracking is a web application designed to help athletes and coaches track performance metrics analyze progress over time.
+All In Performance (AIP) Athlete Tracking is a web application designed to help athletes and coaches track performance metrics, analyze progress over time.
 The application provides a user-friendly interface for coaches to log athlete metrics for specified exercises.
 
 ## Architecture

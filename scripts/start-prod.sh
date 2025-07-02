@@ -29,11 +29,11 @@ fi
 
 # Stop any existing containers
 echo "🔄 Stopping existing containers..."
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
 
 # Build and start production environment
 echo "🚀 Building and starting production services..."
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 echo "✅ Production environment started!"
 echo "🌐 Application: http://localhost"
@@ -41,4 +41,4 @@ echo "🔧 Backend API: http://localhost:3000"
 
 # Show container status
 echo "📊 Container Status:"
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml ps
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
